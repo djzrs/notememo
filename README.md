@@ -31,20 +31,57 @@ Cloudflare 会自动构建并部署，部署完成后访问：
 https://notememo.<你的子域>.workers.dev
 ```
 
-### 配置 KV 持久化（强烈推荐）
+### 配置 KV 持久化（强烈推荐，按此流程不会踩坑）
 
-默认情况下，未配置 KV 时数据保存在 Worker **内存**中，Worker 重启后会丢失。要持久化：
+> ⚠️ **首次部署时，`wrangler.toml` 里的 KV 绑定 id 请留空**（`id = ""` 或先注释掉），否则 wrangler 部署会因为找不到 KV namespace 而报错。先让应用以「内存模式」跑起来，再按下面 4 步配置持久化。
+
+**第 1 步：先创建 KV 命名空间（一定要先建空间，再去绑定！）**
 
 1. 登录 [Cloudflare 控制台](https://dash.cloudflare.com)
-2. 进入 **Workers & Pages** → 选择 `notememo` Worker
-3. 左侧菜单 **设置** → **变量** → **KV Namespace 绑定**
-4. 点击 **添加绑定**：
-   - 变量名称：`NOTES`
-   - KV 命名空间：新建一个（或选择已有）
-5. 点击 **保存**，Worker 会自动重新部署
-6. 刷新应用页面，顶部黄色「内存模式」横幅消失，说明数据已持久化
+2. 左侧 **Workers & Pages** → 往下找到 **KV** → 点击 **创建命名空间**
+3. 名称随意，例如 `notememo-kv`，点击「添加」
 
-> 也可以直接在 `wrangler.toml` 中取消 `[[kv_namespaces]]` 注释并填入真实 namespace id 后推送。
+> ⚠️ **部署前务必先新建 KV 空间**。如果先打开 Worker 的「绑定」页面，会发现命名空间列表是空的——没有空间可选，绑定根本加不上。
+
+**第 2 步：给 Worker 添加 KV 绑定（变量名必须是 `NOTES`）**
+
+1. 进入 **Workers & Pages** → 选择 `notememo` Worker
+2. 左侧 **设置** → **变量** → **KV Namespace 绑定** → **添加绑定**
+   - 变量名称：`NOTES`（必须和代码里 `env.NOTES` 一致）
+   - KV 命名空间：选择刚才创建的 `notememo-kv`
+3. 点击「保存」
+
+**第 3 步：立刻复制 Namespace ID（刷新页面就会消失！）**
+
+绑定保存后，页面会立刻显示这条 KV 绑定的配置（binding + id）。**ID 只会在绑定之后立即显示一次，刷新页面就会消失**，所以一定要**当场复制**。
+
+![复制 KV Namespace ID 指引](https://show.shareimage.cn:443/static/202610/8e689864f6d2435e.png)
+
+**第 4 步：把 ID 填回 `wrangler.toml`，重新部署**
+
+1. 打开项目根目录的 `wrangler.toml`，找到：
+
+   ```toml
+   [[kv_namespaces]]
+   binding = "NOTES"
+   id = "这里替换成你复制的 Namespace ID"
+   ```
+
+2. 把 `id` 替换成你复制的 32 位 ID
+3. 推送代码触发自动部署：
+
+   ```bash
+   git add .
+   git commit -m "config: 绑定 KV namespace"
+   git push origin main
+   ```
+
+4. 等 1～2 分钟部署完成，刷新备忘录页面：
+   - 顶部黄色「内存模式」横幅**消失** → 持久化生效
+   - 旧数据重新出现 → KV 数据恢复
+
+> ⚠️ **本仓库 `wrangler.toml` 里已填好作者自己的 Namespace ID。**
+> 如果你要部署到**你自己的 Cloudflare 账户**，部署前务必把 `id` 替换成你自己的（或先留空部署，再按上面流程绑定），否则 wrangler 会拿别人的 namespace ID 部署到你的账户，导致失败。
 
 ## 💻 本地开发
 
