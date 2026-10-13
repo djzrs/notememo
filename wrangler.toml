@@ -4,17 +4,11 @@ compatibility_date = "2025-01-01"
 workers_dev = true
 
 # ============================================================
-# 数据持久化（推荐配置，可选）：
-# 未配置时备忘录保存在 Worker 内存中，重启后会丢失。
-# 要让数据持久化到 Cloudflare KV：
-#   1) 登录 Cloudflare 控制台 → Workers & Pages → 选择 notememo
-#   2) 左侧「设置」→「变量」→「KV Namespace 绑定」→「添加绑定」
-#      - 变量名称：NOTES
-#      - KV 命名空间：新建一个（或选择已有）
-#   3) 点击保存，Worker 会自动重新部署
-#
-# 如果你更习惯在代码里声明绑定，取消下面两行注释并填入真实 id：
-# [[kv_namespaces]]
-# binding = "NOTES"
-# id = "你的 KV namespace id"
+# KV 数据持久化绑定（必须保留）
+# 备忘录数据持久化到 Cloudflare KV。binding 变量名必须与代码
+# src/index.js 中 createStore(env) 读取的 env.NOTES 一致。
+# 不要删掉下面的绑定，否则部署会回到内存模式导致数据不可读。
 # ============================================================
+[[kv_namespaces]]
+binding = "NOTES"
+id = "09901a5f4cba4f5b99093dfa2c177391"
