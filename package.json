@@ -1,0 +1,17 @@
+{
+  "name": "notememo",
+  "version": "1.0.0",
+  "description": "一个使用 Cloudflare Workers 部署的轻量备忘录应用",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "keywords": ["cloudflare", "workers", "notes", "memo"],
+  "author": "djzrs",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
