@@ -1,6 +1,6 @@
 # 📝 Notememo 备忘录
 
-一个使用 **Cloudflare Workers** 部署的轻量备忘录应用。支持新建、编辑、删除、搜索、完成标记、置顶，数据可持久化到 Cloudflare KV。
+一个使用 **Cloudflare Workers** 部署的轻量备忘录应用。支持新建、编辑、删除、搜索、完成标记、置顶、**JSON 导入导出**，数据可持久化到 Cloudflare KV。
 
 ## ✨ 功能
 
@@ -8,7 +8,9 @@
 - 实时搜索（标题 + 内容）
 - 完成标记、置顶
 - 相对时间显示（刚刚 / x 分钟前 / x 小时前 / 日期）
+- **导入 / 导出**：一键导出全部备忘为 JSON 文件，支持从 JSON 文件导入（相同 id 覆盖，新 id 追加，可安全合并）
 - 响应式设计，手机和电脑均可使用
+- **UI 基于 [animal-island-ui](https://github.com/guokaigdg/animal-island-ui)**：暖色奶油背景、燕尾飘带标题、3D 厚阴影按钮、blob 弹窗、纯 CSS 图标（无 emoji）
 - 数据持久化到 Cloudflare KV（配置后）
 
 ## 🚀 部署
@@ -59,6 +61,7 @@ npm run dev
 | --- | --- | --- |
 | GET | `/api/notes` | 获取全部备忘录 |
 | POST | `/api/notes` | 新建备忘录 |
+| POST | `/api/notes/import` | 批量导入备忘录（`{"notes": [...]}`） |
 | PUT | `/api/notes/:id` | 更新备忘录（标题 / 内容 / 完成 / 置顶） |
 | DELETE | `/api/notes/:id` | 删除备忘录 |
 
@@ -69,3 +72,17 @@ npm run dev
 curl -X POST https://<你的域名>/api/notes \
   -H "Content-Type: application/json" \
   -d '{"title":"买牛奶","content":"记得买两盒"}'
+
+# 批量导入
+curl -X POST https://<你的域名>/api/notes/import \
+  -H "Content-Type: application/json" \
+  -d '{"notes":[{"title":"买牛奶","content":"记得买两盒"},{"title":"开会","content":"下午 3 点周会"}]}'
+```
+
+## 💾 导入导出
+
+- **导出**：点击页面右上角「导出」按钮，自动下载 `notememo-export-<日期>.json` 文件，包含全部备忘。
+- **导入**：点击「导入」按钮，选择导出的 JSON 文件（或任意 `{"notes": [...]}` / 数组格式），系统会批量写入。
+  - 相同 `id` 的备忘会被覆盖（用于恢复/同步备份）
+  - 新的备忘会追加，不会重复导入已有 id
+- 导入导出非常适合**备份**和**多设备迁移**。
